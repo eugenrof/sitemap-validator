@@ -1,43 +1,25 @@
 // --- Environment Detection & Proxy Configuration ---
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-const PROXY_URL = IS_LOCAL 
-    ? 'http://localhost:8010/proxy/' 
-    : 'https://corsproxy.io/?';
+// Replace the URL below with your actual Vercel project deployment URL
+const MY_PROXY_URL = 'https://YOUR_VERCEL_PROJECT_NAME.vercel.app/api/proxy?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
-    if (IS_LOCAL) {
-        return await fetch(PROXY_URL + url);
+    try {
+        // Direct call to your private, dedicated Vercel proxy
+        const response = await fetch(MY_PROXY_URL + encodeURIComponent(url), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/xml, text/xml, */*'
+            }
+        });
+        
+        if (!response.ok) throw new Error(`Proxy returned status: ${response.status}`);
+        return response;
+    } catch (err) {
+        throw new Error(`Private proxy failed: ${err.message}`);
     }
-
-    const proxies = [
-        'https://corsproxy.io/?',
-        'https://api.allorigins.win/raw?url=',
-        'https://thingproxy.freeboard.io/fetch/',
-        'https://proxy.cors.sh/',
-        'https://api.codetabs.com/v1/proxy?quest='
-    ];
-
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    };
-
-    for (const proxy of proxies) {
-        try {
-            // Using mode: 'cors' and adding headers to mimic browser request
-            const response = await fetch(proxy + encodeURIComponent(url), {
-                method: 'GET',
-                mode: 'cors',
-                headers: headers
-            });
-            return response;
-        } catch (err) {
-            console.warn(`Proxy ${proxy} failed, trying next...`);
-            continue; 
-        }
-    }
-    throw new Error('All proxy fallbacks exhausted. Target endpoint unreachable.');
 }
 
 // --- Split Resizer Interaction Logic ---

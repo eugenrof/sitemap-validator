@@ -1,0 +1,12 @@
+{
+  "name": "sitemap-proxy",
+  "version": "1.0.0",
+  "description": "Private proxy for sitemap validation",
+  "main": "api/proxy.js",
+  "scripts": {
+    "start": "node api/proxy.js"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
