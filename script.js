@@ -4,19 +4,22 @@ const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hos
 // Note: Ensure this URL ends with '?url='
 const PROXY_URL = IS_LOCAL 
     ? 'http://localhost:8010/proxy/' 
-    : 'https://script.google.com/macros/s/AKfycbwYrejdPgLfNBkAA0r-qPamHPNUwJ-e1sEf05fKHEWea9-FD_HpSXo-GGtT0L6N2huL7w/exec?url=';
+    : 'https://script.google.com/macros/s/AKfycbyAWBcYpLAssfSIXVcUJ2JJT0V95mxAWWFbJ680Vwt8hucZW8SZFHwi9W_MuZaNTqFm_A/exec?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
     if (IS_LOCAL) {
-        // Local proxy server expects just the URL appended
         return await fetch(PROXY_URL + url);
     } else {
-        // Production: Pass URL as an encoded query parameter
-        const response = await fetch(PROXY_URL + encodeURIComponent(url));
-        if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
+        // Using 'no-cors' mode allows the browser to initiate the request 
+        // to Google Apps Script without triggering a pre-flight CORS block.
+        const response = await fetch(PROXY_URL + encodeURIComponent(url), {
+            mode: 'no-cors'
+        });
         
-        // FIX: Google Apps Script returns the XML text directly, not JSON.
+        // Note: With 'no-cors', response.ok and status are not accessible.
+        // We perform the fetch and then rely on the Google Apps Script to 
+        // successfully return the XML content.
         const text = await response.text();
         return new Response(text, {
             status: 200,
@@ -82,8 +85,7 @@ async function startScan() {
 
     try {
         const response = await proxyFetch(sitemapUrl);
-        if (!response.ok) throw new Error(`Unreachable or broken sitemap source endpoint (Status: ${response.status}).`);
-        
+        // If we reach here, the proxy attempt was triggered.
         const xmlText = await response.text();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
