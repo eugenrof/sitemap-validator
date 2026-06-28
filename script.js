@@ -1,24 +1,45 @@
 // --- Environment Detection & Proxy Configuration ---
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// Note: Ensure this URL ends with '?url='
 const PROXY_URL = IS_LOCAL 
     ? 'http://localhost:8010/proxy/' 
-    : 'https://api.allorigins.win/get?url=';
+    : 'https://corsproxy.io/?';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
     if (IS_LOCAL) {
         return await fetch(PROXY_URL + url);
-    } else {
-        // allorigins.win returns a JSON object with a 'contents' field
-        const response = await fetch(PROXY_URL + encodeURIComponent(url));
-        const data = await response.json();
-        return new Response(data.contents, {
-            status: 200,
-            headers: { 'Content-Type': 'text/xml' }
-        });
     }
+
+    const proxies = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://thingproxy.freeboard.io/fetch/',
+        'https://proxy.cors.sh/',
+        'https://api.codetabs.com/v1/proxy?quest=',
+        'https://crossorigin.me/',
+        'https://cors-anywhere.herokuapp.com/', // Note: Requires manual request activation
+        'https://api.allorigins.run/raw?url=',
+        'https://proxy.scrapeops.io/v1/?url=',
+        'https://api.scraperapi.com/?api_key=YOUR_KEY&url=' // Requires key if used
+    ];
+
+    for (const proxy of proxies) {
+        try {
+            const response = await fetch(proxy + encodeURIComponent(url));
+            if (response.ok) {
+                const text = await response.text();
+                return new Response(text, {
+                    status: 200,
+                    headers: { 'Content-Type': 'text/xml' }
+                });
+            }
+        } catch (err) {
+            console.warn(`Proxy ${proxy} failed, trying next...`);
+            continue; // Try next proxy
+        }
+    }
+    throw new Error('All proxy fallbacks exhausted. Target endpoint unreachable.');
 }
 
 // --- Split Resizer Interaction Logic ---
