@@ -2,7 +2,7 @@
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 // Replace the URL below with your actual Vercel project deployment URL
-const MY_PROXY_URL = 'https://YOUR_VERCEL_PROJECT_NAME.vercel.app/api/proxy?url=';
+const MY_PROXY_URL = 'https://sitemap-link-validator.vercel.app/api/proxy?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
