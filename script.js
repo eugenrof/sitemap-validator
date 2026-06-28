@@ -1,24 +1,24 @@
 // --- Environment Detection & Proxy Configuration ---
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-// Local proxy for dev, AllOrigins for production
+
+// Note: Ensure this URL ends with '?url='
 const PROXY_URL = IS_LOCAL 
     ? 'http://localhost:8010/proxy/' 
-    : 'https://your-vercel-app-name.vercel.app/api/proxy?url=';
+    : 'https://script.google.com/macros/s/AKfycbwYrejdPgLfNBkAA0r-qPamHPNUwJ-e1sEf05fKHEWea9-FD_HpSXo-GGtT0L6N2huL7w/exec?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
     if (IS_LOCAL) {
-        // Use local proxy server and append the URL to the base proxy path
-        const response = await fetch(PROXY_URL + url);
-        return response;
+        // Local proxy server expects just the URL appended
+        return await fetch(PROXY_URL + url);
     } else {
-        // Use AllOrigins for production, which requires the URL to be encoded
+        // Production: Pass URL as an encoded query parameter
         const response = await fetch(PROXY_URL + encodeURIComponent(url));
         if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
-        const data = await response.json();
         
-        // Return a mocked Response object to keep existing logic working
-        return new Response(data.contents, {
+        // Google Apps Script returns the XML text directly
+        const text = await response.text();
+        return new Response(text, {
             status: 200,
             headers: { 'Content-Type': 'text/xml' }
         });
@@ -153,11 +153,7 @@ function clearResults() {
                         </svg>
                     </div>
                     <h3>Awaiting Target Discovery Stream</h3>
-                    <p>No real-time URL execution paths have been extracted yet. Provide a valid XML endpoint configuration in the workspace setup to start automated verification protocols.</p>
-                    <div class="placeholder-tips">
-                        <div class="tip-item"><strong>Status 200</strong> Target reachable and fully optimized.</div>
-                        <div class="tip-item"><strong>Status 3xx / 4xx / 5xx / Error</strong> Redirection loops, dead links, server dropouts, or strict local CORS policy restrictions.</div>
-                    </div>
+                    <p>No real-time URL execution paths have been extracted yet.</p>
                 </div>
             </td>
         </tr>
