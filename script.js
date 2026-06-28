@@ -18,25 +18,23 @@ async function proxyFetch(url) {
         'https://proxy.cors.sh/',
         'https://api.codetabs.com/v1/proxy?quest=',
         'https://crossorigin.me/',
-        'https://cors-anywhere.herokuapp.com/', // Note: Requires manual request activation
+        'https://cors-anywhere.herokuapp.com/', 
         'https://api.allorigins.run/raw?url=',
         'https://proxy.scrapeops.io/v1/?url=',
-        'https://api.scraperapi.com/?api_key=YOUR_KEY&url=' // Requires key if used
+        'https://api.scraperapi.com/?api_key=YOUR_KEY&url='
     ];
 
     for (const proxy of proxies) {
         try {
             const response = await fetch(proxy + encodeURIComponent(url));
             if (response.ok) {
-                const text = await response.text();
-                return new Response(text, {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/xml' }
-                });
+                // If it's a raw proxy, return as is. 
+                // If the response is text/xml, this handles it correctly.
+                return response;
             }
         } catch (err) {
             console.warn(`Proxy ${proxy} failed, trying next...`);
-            continue; // Try next proxy
+            continue; 
         }
     }
     throw new Error('All proxy fallbacks exhausted. Target endpoint unreachable.');
@@ -99,7 +97,6 @@ async function startScan() {
 
     try {
         const response = await proxyFetch(sitemapUrl);
-        // If we reach here, the proxy attempt was triggered.
         const xmlText = await response.text();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -125,10 +122,11 @@ async function startScan() {
             let rowClass = 'status-error';
 
             try {
-                const res = await fetch(url, { method: 'GET', mode: 'no-cors' });
-                statusCode = res.status === 0 ? '200 (opaque)' : res.status;
-                statusText = res.ok || res.status === 0 ? 'OK' : 'Link Flagged';
-                rowClass = res.ok || res.status === 0 ? 'status-200' : 'status-error';
+                // Use proxyFetch here instead of direct fetch to get real status codes
+                const res = await proxyFetch(url);
+                statusCode = res.status;
+                statusText = res.ok ? 'OK' : 'Link Flagged';
+                rowClass = res.ok ? 'status-200' : 'status-error';
             } catch (err) { /* Defaults kept */ }
 
             const row = `<tr>
@@ -281,7 +279,7 @@ async function downloadPDF() {
             doc.text(line, margin + 3, currentY + 5 + (index * lineHeight));
         });
 
-        if (codeText === "200" || codeText === "200 (opaque)") {
+        if (codeText === "200") {
             doc.setTextColor(43, 138, 62);
         } else {
             doc.setTextColor(201, 42, 42);
