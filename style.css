@@ -547,4 +547,20 @@ h2 {
         gap: 8px;
         text-align: center;
     }
+
+    .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: #107c41; /* Matches your brand color from the PDF report */
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 }

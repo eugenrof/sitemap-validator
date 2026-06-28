@@ -91,7 +91,12 @@ async function startScan() {
     resultsBody.innerHTML = '';
     scanBtn.disabled = true;
     if (pdfBtn) pdfBtn.disabled = true;
-    statusIndicator.innerText = '📡 Downloading schema elements...';
+
+    // --- UPDATED: Visual Loading State ---
+    statusIndicator.innerHTML = `
+        <span class="spinner"></span> 
+        <span>📡 Analyzing Sitemap Data...</span>
+    `;
 
     try {
         const response = await proxyFetch(sitemapUrl);
@@ -109,11 +114,10 @@ async function startScan() {
 
         if (urls.length === 0) throw new Error('Zero URLs identified inside target schema.');
 
-        statusIndicator.innerText = `📋 Loaded ${urls.length} target connections. Executing analysis...`;
-
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
-            statusIndicator.innerText = `⏳ Parsing indices (${i + 1}/${urls.length}): ${url}`;
+            // Update indicator during the loop for active feedback
+            statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing indices (${i + 1}/${urls.length}): ${url}</span>`;
             
             let statusCode = 'ERR';
             let statusText = 'Connection Failed';
