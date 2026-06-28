@@ -1,13 +1,12 @@
 // --- Environment Detection & Proxy Configuration ---
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// Replace the URL below with your actual Vercel project deployment URL
+// Vercel project deployment URL
 const MY_PROXY_URL = 'https://sitemap-link-validator.vercel.app/api/proxy?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
     try {
-        // Direct call to your private, dedicated Vercel proxy
         const response = await fetch(MY_PROXY_URL + encodeURIComponent(url), {
             method: 'GET',
             headers: {
@@ -76,7 +75,6 @@ async function startScan() {
     scanBtn.disabled = true;
     if (pdfBtn) pdfBtn.disabled = true;
 
-    // Visual Loading State
     statusIndicator.innerHTML = `<span class="spinner"></span> <span>📡 Analyzing Sitemap Data...</span>`;
 
     try {
@@ -98,7 +96,7 @@ async function startScan() {
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
             
-            // Log the target link clearly in console
+            // Console log the actual target URL for clear debugging
             console.log(`%c Validating: ${url}`, 'color: #0d6efd; font-weight: bold;');
             
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
@@ -118,12 +116,12 @@ async function startScan() {
                     rowClass = 'status-error';
                 }
             } catch (err) { 
-                // Extract 3-digit code from error if available
                 const match = err.message.match(/\d{3}/);
                 statusCode = match ? match[0] : 'ERR';
                 statusText = 'Connection Error';
             }
 
+            // URL is explicitly placed in the first column here
             const row = `<tr>
                 <td>${url}</td>
                 <td class="${rowClass}">${statusCode}</td>
