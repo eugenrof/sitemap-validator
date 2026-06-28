@@ -28,8 +28,6 @@ async function proxyFetch(url) {
         try {
             const response = await fetch(proxy + encodeURIComponent(url));
             if (response.ok) {
-                // If it's a raw proxy, return as is. 
-                // If the response is text/xml, this handles it correctly.
                 return response;
             }
         } catch (err) {
@@ -117,17 +115,18 @@ async function startScan() {
             const url = urls[i];
             statusIndicator.innerText = `⏳ Parsing indices (${i + 1}/${urls.length}): ${url}`;
             
-            let statusCode = 'ERROR';
-            let statusText = 'Blocked / Connection Timeout';
+            let statusCode = 'ERR';
+            let statusText = 'Connection Failed';
             let rowClass = 'status-error';
 
             try {
-                // Use proxyFetch here instead of direct fetch to get real status codes
                 const res = await proxyFetch(url);
                 statusCode = res.status;
                 statusText = res.ok ? 'OK' : 'Link Flagged';
                 rowClass = res.ok ? 'status-200' : 'status-error';
-            } catch (err) { /* Defaults kept */ }
+            } catch (err) { 
+                statusText = err.message || 'Connection Failed';
+            }
 
             const row = `<tr>
                 <td><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></td>
