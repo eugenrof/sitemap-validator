@@ -14,10 +14,15 @@ async function proxyFetch(url) {
             }
         });
         
-        if (!response.ok) throw new Error(`Proxy returned status: ${response.status}`);
+        if (!response.ok) {
+            // We throw an error that includes the status code so we can capture it in the catch block
+            const error = new Error(`HTTP Error: ${response.status}`);
+            error.status = response.status;
+            throw error;
+        }
         return response;
     } catch (err) {
-        throw new Error(`Private proxy failed: ${err.message}`);
+        throw err;
     }
 }
 
@@ -96,7 +101,6 @@ async function startScan() {
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
             
-            // Console log the actual target URL for clear debugging
             console.log(`%c Validating: ${url}`, 'color: #0d6efd; font-weight: bold;');
             
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
@@ -108,22 +112,24 @@ async function startScan() {
             try {
                 const res = await proxyFetch(url);
                 statusCode = res.status;
-                if (res.status >= 200 && res.status < 300) {
-                    statusText = 'OK';
-                    rowClass = 'status-200';
-                } else {
-                    statusText = 'Link Flagged';
-                    rowClass = 'status-error';
-                }
+                statusText = 'OK';
+                rowClass = 'status-200';
             } catch (err) { 
-                const match = err.message.match(/\d{3}/);
-                statusCode = match ? match[0] : 'ERR';
-                statusText = 'Connection Error';
+                // Capture the error status if available, otherwise categorize as a network issue
+                statusCode = err.status || 'ERR';
+                
+                if (statusCode === 404) {
+                    statusText = 'Not Found';
+                } else if (statusCode >= 500) {
+                    statusText = 'Server Error';
+                } else {
+                    statusText = 'Network Unreachable';
+                }
+                rowClass = 'status-error';
             }
 
-            // URL is explicitly placed in the first column here as a clean, clickable link
             const row = `<tr>
-                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0000EE; text-decoration: underline;">${url}</a></td>
+                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
                 <td class="${rowClass}">${statusCode}</td>
                 <td>${statusText}</td>
             </tr>`;
