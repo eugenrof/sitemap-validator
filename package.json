@@ -7,6 +7,6 @@
     "start": "node api/proxy.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
