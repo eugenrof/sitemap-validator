@@ -16,20 +16,22 @@ async function proxyFetch(url) {
         'https://api.allorigins.win/raw?url=',
         'https://thingproxy.freeboard.io/fetch/',
         'https://proxy.cors.sh/',
-        'https://api.codetabs.com/v1/proxy?quest=',
-        'https://crossorigin.me/',
-        'https://cors-anywhere.herokuapp.com/', 
-        'https://api.allorigins.run/raw?url=',
-        'https://proxy.scrapeops.io/v1/?url=',
-        'https://api.scraperapi.com/?api_key=YOUR_KEY&url='
+        'https://api.codetabs.com/v1/proxy?quest='
     ];
+
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    };
 
     for (const proxy of proxies) {
         try {
-            const response = await fetch(proxy + encodeURIComponent(url));
-            if (response.ok) {
-                return response;
-            }
+            // Using mode: 'cors' and adding headers to mimic browser request
+            const response = await fetch(proxy + encodeURIComponent(url), {
+                method: 'GET',
+                mode: 'cors',
+                headers: headers
+            });
+            return response;
         } catch (err) {
             console.warn(`Proxy ${proxy} failed, trying next...`);
             continue; 
@@ -92,6 +94,7 @@ async function startScan() {
     scanBtn.disabled = true;
     if (pdfBtn) pdfBtn.disabled = true;
 
+    // Visual Loading State
     statusIndicator.innerHTML = `<span class="spinner"></span> <span>📡 Analyzing Sitemap Data...</span>`;
 
     try {
@@ -120,22 +123,10 @@ async function startScan() {
 
             try {
                 const res = await proxyFetch(url);
-                const text = await res.text(); // Retrieve content to check for 404 signatures
-                
-                // Heuristic: Check if the returned content indicates a 404
-                const is404 = text.includes('404') || 
-                              text.toLowerCase().includes('page not found') || 
-                              text.toLowerCase().includes('not found');
-
-                if (is404) {
-                    statusCode = 404;
-                    statusText = 'Page Not Found (Heuristic)';
-                    rowClass = 'status-error';
-                } else {
-                    statusCode = res.status;
-                    statusText = res.ok ? 'OK' : 'Link Flagged';
-                    rowClass = res.ok ? 'status-200' : 'status-error';
-                }
+                // Relying on native response status
+                statusCode = res.status;
+                statusText = (res.status >= 200 && res.status < 300) ? 'OK' : 'Link Flagged';
+                rowClass = (res.status >= 200 && res.status < 300) ? 'status-200' : 'status-error';
             } catch (err) { 
                 statusText = err.message || 'Connection Failed';
             }
