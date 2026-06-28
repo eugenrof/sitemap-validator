@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitemap Link Validator</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    
+    <!-- Social Sharing (Open Graph) -->
+    <meta property="og:title" content="Sitemap Link Validator">
+    <meta property="og:description" content="A real-time tool to extract and validate XML sitemap endpoints.">
+    <meta property="og:image" content="images/social-preview.png">
+    <meta property="og:url" content="https://eugenrof.github.io/sitemap-validator/">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+        <div class="split-container" id="splitContainer">
+            
+            <div class="panel left-panel" id="leftPanel">
+                <header class="logo-header">
+                    <a href="/" class="logo-link">
+                        <img src="images/favicon.png" alt="Logo" class="site-logo">
+                    </a>
+                    <h2>Sitemap Link Validator</h2>
+                </header>
+                
+                <div class="info-message">
+                    Input your target XML sitemap URL below. The engine crawls the extracted endpoints and validates their HTTP response statuses in real-time.
+                </div>
+                
+                <div class="control-panel">
+                    <label for="sitemapUrl" class="field-label">Target Scheme Configuration Endpoint</label>
+                    <div class="input-inline-group">
+                        <input 
+                            type="url" 
+                            id="sitemapUrl" 
+                            placeholder="https://example.com/sitemap.xml" 
+                        />
+                        <button id="scanBtn" onclick="startScan()" class="btn-compact">Launch Scan</button>
+                        <button id="clearBtn" onclick="clearResults()" class="btn-compact btn-secondary">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Dynamic background loading animation container -->
+                <div class="scan-blueprint"></div>
+
+                <div class="status-box">
+                    <span class="status-title">Engine Operational State:</span>
+                    <div id="statusIndicator" class="status-text">Ready to scan</div>
+                </div>
+            </div>
+
+            <div class="drag-resizer" id="dragResizer"></div>
+
+            <div class="panel right-panel" id="rightPanel">
+                <div class="report-header-row">
+                    <h2>Analysis Execution Ledger</h2>
+                    <button id="pdfBtn" onclick="downloadPDF()" class="btn-compact btn-action" disabled>Download PDF</button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Evaluated Location Target Connection</th>
+                                <th style="width: 150px;">HTTP Code</th>
+                                <th style="width: 220px;">Verification Signatures</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Onboarding Empty State Placeholder Card -->
+                            <tr class="table-empty-row">
+                                <td colspan="3">
+                                    <div class="empty-placeholder-card">
+                                        <div class="placeholder-icon">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                            </svg>
+                                        </div>
+                                        <h3>Awaiting Target Discovery Stream</h3>
+                                        <p>No real-time URL execution paths have been extracted yet. Provide a valid XML endpoint configuration in the workspace setup to start automated verification protocols</p>
+                                        <div class="placeholder-tips">
+                                            <div class="tip-item"><strong>Status 200</strong> Target reachable and fully optimized.</div>
+                                            <div class="tip-item"><strong>Status 3xx / 4xx / 5xx / Error</strong> Redirection loops, dead links, server dropouts, or strict local CORS policy restrictions</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-left">© 2026 | Eugen Rof</div>
+                <div class="footer-right">
+                    <a href="https://github.com/eugenrof/sitemap-validator" target="_blank" rel="noopener noreferrer">GitHub Source</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
