@@ -4,24 +4,17 @@ const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hos
 // Note: Ensure this URL ends with '?url='
 const PROXY_URL = IS_LOCAL 
     ? 'http://localhost:8010/proxy/' 
-    : 'https://script.google.com/macros/s/AKfycbyAWBcYpLAssfSIXVcUJ2JJT0V95mxAWWFbJ680Vwt8hucZW8SZFHwi9W_MuZaNTqFm_A/exec?url=';
+    : 'https://api.allorigins.win/get?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
     if (IS_LOCAL) {
         return await fetch(PROXY_URL + url);
     } else {
-        // Using 'no-cors' mode allows the browser to initiate the request 
-        // to Google Apps Script without triggering a pre-flight CORS block.
-        const response = await fetch(PROXY_URL + encodeURIComponent(url), {
-            mode: 'no-cors'
-        });
-        
-        // Note: With 'no-cors', response.ok and status are not accessible.
-        // We perform the fetch and then rely on the Google Apps Script to 
-        // successfully return the XML content.
-        const text = await response.text();
-        return new Response(text, {
+        // allorigins.win returns a JSON object with a 'contents' field
+        const response = await fetch(PROXY_URL + encodeURIComponent(url));
+        const data = await response.json();
+        return new Response(data.contents, {
             status: 200,
             headers: { 'Content-Type': 'text/xml' }
         });
