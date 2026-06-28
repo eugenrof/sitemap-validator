@@ -16,7 +16,7 @@ async function proxyFetch(url) {
         const response = await fetch(PROXY_URL + encodeURIComponent(url));
         if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
         
-        // Google Apps Script returns the XML text directly
+        // FIX: Google Apps Script returns the XML text directly, not JSON.
         const text = await response.text();
         return new Response(text, {
             status: 200,
