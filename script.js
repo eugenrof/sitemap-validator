@@ -123,7 +123,7 @@ async function startScan() {
 
             // URL is explicitly placed in the first column here as a clean, clickable link
             const row = `<tr>
-                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${url}</a></td>
+                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0000EE; text-decoration: underline;">${url}</a></td>
                 <td class="${rowClass}">${statusCode}</td>
                 <td>${statusText}</td>
             </tr>`;
