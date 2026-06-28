@@ -3,7 +3,7 @@ const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hos
 // Local proxy for dev, AllOrigins for production
 const PROXY_URL = IS_LOCAL 
     ? 'http://localhost:8010/proxy/' 
-    : 'https://api.allorigins.win/get?url=';
+    : 'https://your-vercel-app-name.vercel.app/api/proxy?url=';
 
 // --- Helper to fetch through proxy ---
 async function proxyFetch(url) {
