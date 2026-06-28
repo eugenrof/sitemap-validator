@@ -99,22 +99,29 @@ async function startScan() {
             const url = urls[i];
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
-            let statusCode = 'ERR';
-            let statusText = 'Connection Failed';
+            let statusCode = 'N/A';
+            let statusText = 'Unknown';
             let rowClass = 'status-error';
 
             try {
                 const res = await proxyFetch(url);
-                // Relying on native response status
                 statusCode = res.status;
-                statusText = (res.status >= 200 && res.status < 300) ? 'OK' : 'Link Flagged';
-                rowClass = (res.status >= 200 && res.status < 300) ? 'status-200' : 'status-error';
+                if (res.status >= 200 && res.status < 300) {
+                    statusText = 'OK';
+                    rowClass = 'status-200';
+                } else {
+                    statusText = 'Link Flagged';
+                    rowClass = 'status-error';
+                }
             } catch (err) { 
-                statusText = err.message || 'Connection Failed';
+                // Extract the code from the error if available (e.g., 404)
+                const match = err.message.match(/\d{3}/);
+                statusCode = match ? match[0] : 'ERR';
+                statusText = 'Connection Error';
             }
 
             const row = `<tr>
-                <td><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></td>
+                <td>${url}</td>
                 <td class="${rowClass}">${statusCode}</td>
                 <td>${statusText}</td>
             </tr>`;
