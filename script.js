@@ -92,11 +92,7 @@ async function startScan() {
     scanBtn.disabled = true;
     if (pdfBtn) pdfBtn.disabled = true;
 
-    // --- UPDATED: Visual Loading State ---
-    statusIndicator.innerHTML = `
-        <span class="spinner"></span> 
-        <span>📡 Analyzing Sitemap Data...</span>
-    `;
+    statusIndicator.innerHTML = `<span class="spinner"></span> <span>📡 Analyzing Sitemap Data...</span>`;
 
     try {
         const response = await proxyFetch(sitemapUrl);
@@ -116,8 +112,7 @@ async function startScan() {
 
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
-            // Update indicator during the loop for active feedback
-            statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing indices (${i + 1}/${urls.length}): ${url}</span>`;
+            statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
             let statusCode = 'ERR';
             let statusText = 'Connection Failed';
@@ -125,9 +120,22 @@ async function startScan() {
 
             try {
                 const res = await proxyFetch(url);
-                statusCode = res.status;
-                statusText = res.ok ? 'OK' : 'Link Flagged';
-                rowClass = res.ok ? 'status-200' : 'status-error';
+                const text = await res.text(); // Retrieve content to check for 404 signatures
+                
+                // Heuristic: Check if the returned content indicates a 404
+                const is404 = text.includes('404') || 
+                              text.toLowerCase().includes('page not found') || 
+                              text.toLowerCase().includes('not found');
+
+                if (is404) {
+                    statusCode = 404;
+                    statusText = 'Page Not Found (Heuristic)';
+                    rowClass = 'status-error';
+                } else {
+                    statusCode = res.status;
+                    statusText = res.ok ? 'OK' : 'Link Flagged';
+                    rowClass = res.ok ? 'status-200' : 'status-error';
+                }
             } catch (err) { 
                 statusText = err.message || 'Connection Failed';
             }
