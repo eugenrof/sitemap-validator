@@ -97,6 +97,10 @@ async function startScan() {
 
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
+            
+            // Log the target link clearly in console
+            console.log(`%c Validating: ${url}`, 'color: #0d6efd; font-weight: bold;');
+            
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
             let statusCode = 'N/A';
@@ -114,7 +118,7 @@ async function startScan() {
                     rowClass = 'status-error';
                 }
             } catch (err) { 
-                // Extract the code from the error if available (e.g., 404)
+                // Extract 3-digit code from error if available
                 const match = err.message.match(/\d{3}/);
                 statusCode = match ? match[0] : 'ERR';
                 statusText = 'Connection Error';
