@@ -214,7 +214,11 @@ async function scanSingleUrl() {
         statusIndicator.innerText = `✅ Check complete.`;
         if (pdfBtn) pdfBtn.disabled = false;
     } catch (err) {
-        resultsBody.insertAdjacentHTML('beforeend', `<tr><td>${url}</td><td class="status-error">${err.status || 'ERR'}</td><td>Failed</td></tr>`);
+        resultsBody.insertAdjacentHTML('beforeend', `<tr>
+            <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
+            <td class="status-error">${err.status || 'ERR'}</td>
+            <td>Failed</td>
+        </tr>`);
         statusIndicator.innerText = `❌ Error encountered.`;
     }
 }
