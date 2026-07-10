@@ -253,6 +253,26 @@ h2 {
     opacity: 0.6;
 }
 
+/* New style for Scan Single Page button */
+.btn-scan-single {
+    background-color: #6f42c1; /* Example: Purple */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-scan-single:hover {
+    background-color: #5935a3;
+}
+
+.btn-scan-single:disabled {
+    background-color: #a391c4;
+    cursor: not-allowed;
+}
+
 /* --- Soft, Non-Disturbing Placeholder Box --- */
 .scan-blueprint {
     position: absolute;
