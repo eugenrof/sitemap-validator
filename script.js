@@ -69,6 +69,7 @@ async function startScan() {
     const resultsBody = document.getElementById('resultsBody');
     const scanBtn = document.getElementById('scanBtn');
     const pdfBtn = document.getElementById('pdfBtn');
+    const scanSummary = document.getElementById('scanSummary');
 
     if (!sitemapUrl) {
         alert('Please assign a targeted sitemap link.');
@@ -76,6 +77,7 @@ async function startScan() {
     }
 
     resultsBody.innerHTML = '';
+    scanSummary.style.display = 'none';
     scanBtn.disabled = true;
     if (pdfBtn) pdfBtn.disabled = true;
 
@@ -109,7 +111,6 @@ async function startScan() {
             try {
                 const res = await proxyFetch(url);
                 statusCode = res.status;
-                // Check if the request was redirected
                 statusText = res.redirected ? 'OK (Redirected)' : 'OK';
                 rowClass = 'status-200';
             } catch (err) { 
@@ -132,6 +133,29 @@ async function startScan() {
             resultsBody.insertAdjacentHTML('beforeend', row);
         }
 
+        // --- Calculate Summary Stats ---
+        const tableRows = Array.from(document.querySelectorAll('#resultsBody tr:not(.table-empty-row)'));
+        const stats = tableRows.reduce((acc, row) => {
+            const code = parseInt(row.cells[1].innerText);
+            const statusText = row.cells[2].innerText;
+            
+            if (code >= 200 && code < 300) {
+                acc.ok++;
+                if (statusText.includes('Redirected')) acc.redirects++;
+            } else if (code >= 300 && code < 400) {
+                acc.redirects++;
+            } else {
+                acc.errors++;
+            }
+            return acc;
+        }, { ok: 0, redirects: 0, errors: 0 });
+
+        // Update UI Summary
+        document.getElementById('sumOk').innerText = `${stats.ok} OK`;
+        document.getElementById('sumRedir').innerText = `${stats.redirects} Redirected`;
+        document.getElementById('sumErr').innerText = `${stats.errors} Errors`;
+        scanSummary.style.display = 'block';
+
         statusIndicator.innerText = `✅ Extraction finished. Monitored ${urls.length} locations.`;
         if (pdfBtn) pdfBtn.disabled = false;
 
@@ -147,8 +171,10 @@ async function startScan() {
 function clearResults() {
     const resultsBody = document.getElementById('resultsBody');
     const pdfBtn = document.getElementById('pdfBtn');
+    const scanSummary = document.getElementById('scanSummary');
 
     document.getElementById('sitemapUrl').value = '';
+    scanSummary.style.display = 'none';
     
     resultsBody.innerHTML = `
         <tr class="table-empty-row">
@@ -181,7 +207,6 @@ async function downloadPDF() {
         return;
     }
 
-    // Calculate Summary Stats
     const stats = tableRows.reduce((acc, row) => {
         const code = parseInt(row.cells[1].innerText);
         const statusText = row.cells[2].innerText; 
@@ -220,7 +245,6 @@ async function downloadPDF() {
     
     let currentY = 20;
 
-    // Header Box
     doc.setFillColor(233, 236, 239);
     doc.rect(margin, currentY, pageWidth - (margin * 2), 30, 'F');
     doc.setDrawColor(16, 124, 65);
@@ -232,7 +256,6 @@ async function downloadPDF() {
     doc.setTextColor(73, 80, 87);
     doc.text("SITEMAP AUTOMATION WORKSPACE REPORT METRICS SUMMARY", margin + 5, currentY + 6);
 
-    // Summary Metrics
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Total: ${totalLinks} | Success: ${stats.ok} | Redirects: ${stats.redirects} | Errors: ${stats.errors}`, margin + 5, currentY + 14);
