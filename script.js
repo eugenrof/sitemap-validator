@@ -109,7 +109,8 @@ async function startScan() {
             try {
                 const res = await proxyFetch(url);
                 statusCode = res.status;
-                statusText = 'OK';
+                // Check if the request was redirected
+                statusText = res.redirected ? 'OK (Redirected)' : 'OK';
                 rowClass = 'status-200';
             } catch (err) { 
                 statusCode = err.status || 'ERR';
@@ -183,9 +184,16 @@ async function downloadPDF() {
     // Calculate Summary Stats
     const stats = tableRows.reduce((acc, row) => {
         const code = parseInt(row.cells[1].innerText);
-        if (code >= 200 && code < 300) acc.ok++;
-        else if (code >= 300 && code < 400) acc.redirects++;
-        else acc.errors++;
+        const statusText = row.cells[2].innerText; 
+        
+        if (code >= 200 && code < 300) {
+            acc.ok++;
+            if (statusText.includes('Redirected')) acc.redirects++;
+        } else if (code >= 300 && code < 400) {
+            acc.redirects++;
+        } else {
+            acc.errors++;
+        }
         return acc;
     }, { ok: 0, redirects: 0, errors: 0 });
 
