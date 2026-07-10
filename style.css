@@ -200,7 +200,7 @@ h2 {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    background-color: var(--accent-blue); /* Default Blue */
+    background-color: var(--accent-blue);
     color: #ffffff;
     transition: all 0.2s ease;
     flex: 1;
@@ -210,7 +210,7 @@ h2 {
 }
 
 .btn-compact:hover {
-    filter: brightness(90%); /* Automatically darkens any button on hover */
+    background-color: var(--accent-hover);
     transform: translateY(-0.5px);
 }
 
@@ -219,7 +219,33 @@ h2 {
 }
 
 .btn-compact:disabled {
-    background-color: #ced4da !important;
+    background-color: #ced4da;
+    color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-action {
+    background-color: #107c41;
+    box-shadow: 0 2px 4px rgba(16, 124, 65, 0.1);
+}
+
+.btn-action:hover {
+    background-color: #0b5930;
+}
+
+.btn-action:disabled {
+    background-color: #ced4da;
     color: #6c757d;
     cursor: not-allowed;
     transform: none;
@@ -227,20 +253,19 @@ h2 {
     opacity: 0.6;
 }
 
-/* Secondary Button (Grey) */
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-/* Action Button (Green) */
-.btn-action {
-    background-color: #107c41;
-}
-
-/* Scan Single Page Button (Purple) */
+/* Integrated Purple Scan Single Page Button */
 .btn-scan-single {
     background-color: #6f42c1;
     box-shadow: 0 2px 4px rgba(111, 66, 193, 0.15);
+}
+
+.btn-scan-single:hover {
+    background-color: #5935a3;
+}
+
+.btn-scan-single:disabled {
+    background-color: #ced4da;
+    opacity: 0.6;
 }
 
 /* --- Soft, Non-Disturbing Placeholder Box --- */

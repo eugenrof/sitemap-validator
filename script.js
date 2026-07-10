@@ -101,34 +101,36 @@ async function startScan() {
 
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
+            
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
-            // Create initial row
-            const rowId = `row-${i}`;
-            const rowHtml = `<tr id="${rowId}">
-                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
-                <td class="status-200">...</td>
-                <td>Scanning...</td>
-            </tr>`;
-            resultsBody.insertAdjacentHTML('beforeend', rowHtml);
-            const row = document.getElementById(rowId);
+            let statusCode = 'N/A';
+            let statusText = 'Unknown';
+            let rowClass = 'status-error';
 
             try {
                 const res = await proxyFetch(url);
-                row.cells[1].innerText = res.status;
-                row.cells[1].className = 'status-200';
-                row.cells[2].innerText = res.redirected ? 'OK (Redirected)' : 'OK';
-
-                // --- INTEGRATED ASSET SCANNING ---
-                const htmlText = await res.text();
-                const assets = extractAssetsFromPage(htmlText, url);
-                await validateAndDisplayAssets(assets, row);
-                
+                statusCode = res.status;
+                statusText = res.redirected ? 'OK (Redirected)' : 'OK';
+                rowClass = 'status-200';
             } catch (err) { 
-                row.cells[1].innerText = err.status || 'ERR';
-                row.cells[1].className = 'status-error';
-                row.cells[2].innerText = 'Failed/Error';
+                statusCode = err.status || 'ERR';
+                if (statusCode === 404) {
+                    statusText = 'Not Found';
+                } else if (statusCode >= 500) {
+                    statusText = 'Server Error';
+                } else {
+                    statusText = 'Network Unreachable';
+                }
+                rowClass = 'status-error';
             }
+
+            const row = `<tr>
+                <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
+                <td class="${rowClass}">${statusCode}</td>
+                <td>${statusText}</td>
+            </tr>`;
+            resultsBody.insertAdjacentHTML('beforeend', row);
         }
 
         // --- Calculate Summary Stats ---
@@ -148,6 +150,7 @@ async function startScan() {
             return acc;
         }, { ok: 0, redirects: 0, errors: 0 });
 
+        // Update UI Summary
         document.getElementById('sumOk').innerText = `${stats.ok} OK`;
         document.getElementById('sumRedir').innerText = `${stats.redirects} Redirected`;
         document.getElementById('sumErr').innerText = `${stats.errors} Errors`;
@@ -158,12 +161,13 @@ async function startScan() {
 
     } catch (error) {
         statusIndicator.innerText = `❌ Error encounter: ${error.message}`;
+        if (pdfBtn && resultsBody.querySelectorAll('tr:not(.table-empty-row)').length === 0) pdfBtn.disabled = true;
     } finally {
         scanBtn.disabled = false;
     }
 }
 
-// --- Updated: Single URL Scan Functionality ---
+// --- NEW: Single URL Scan Functionality ---
 async function scanSingleUrl() {
     const url = document.getElementById('sitemapUrl').value.trim();
     const resultsBody = document.getElementById('resultsBody');
@@ -180,33 +184,39 @@ async function scanSingleUrl() {
 
     statusIndicator.innerHTML = `<span class="spinner"></span> <span>🔍 Checking: ${url}</span>`;
     
-    // Insert initial row
-    resultsBody.insertAdjacentHTML('beforeend', `<tr id="single-row">
-        <td><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></td>
-        <td class="status-200">...</td>
-        <td>Scanning...</td>
-    </tr>`);
-    const row = document.getElementById('single-row');
-    
     try {
         const res = await proxyFetch(url);
-        row.cells[1].innerText = res.status;
-        row.cells[1].className = 'status-200';
-        row.cells[2].innerText = res.redirected ? 'OK (Redirected)' : 'OK';
+        const statusCode = res.status;
+        const statusText = res.redirected ? 'OK (Redirected)' : 'OK';
         
-        // --- INTEGRATED ASSET SCANNING ---
-        const htmlText = await res.text();
-        await validateAndDisplayAssets(extractAssetsFromPage(htmlText, url), row);
+        const row = `<tr>
+            <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
+            <td class="status-200">${statusCode}</td>
+            <td>${statusText}</td>
+        </tr>`;
+        resultsBody.insertAdjacentHTML('beforeend', row);
+        
+        // Recalculate summary after single addition
+        const tableRows = Array.from(document.querySelectorAll('#resultsBody tr:not(.table-empty-row)'));
+        const stats = tableRows.reduce((acc, row) => {
+            const code = parseInt(row.cells[1].innerText);
+            if (code >= 200 && code < 300) acc.ok++;
+            else if (code >= 300 && code < 400) acc.redirects++;
+            else acc.errors++;
+            return acc;
+        }, { ok: 0, redirects: 0, errors: 0 });
 
+        document.getElementById('sumOk').innerText = `${stats.ok} OK`;
+        document.getElementById('sumRedir').innerText = `${stats.redirects} Redirected`;
+        document.getElementById('sumErr').innerText = `${stats.errors} Errors`;
+        document.getElementById('scanSummary').style.display = 'block';
+
+        statusIndicator.innerText = `✅ Check complete.`;
+        if (pdfBtn) pdfBtn.disabled = false;
     } catch (err) {
-        row.cells[1].innerText = err.status || 'ERR';
-        row.cells[1].className = 'status-error';
-        row.cells[2].innerText = 'Failed/Error';
-        statusIndicator.innerText = `⚠️ Check completed with status: ${row.cells[1].innerText}`;
+        resultsBody.insertAdjacentHTML('beforeend', `<tr><td>${url}</td><td class="status-error">${err.status || 'ERR'}</td><td>Failed</td></tr>`);
+        statusIndicator.innerText = `❌ Error encountered.`;
     }
-
-    if (pdfBtn) pdfBtn.disabled = false;
-    // (Summary update logic omitted for brevity in single row context, same as original)
 }
 
 // --- Management Toolbar Controls ---
@@ -339,7 +349,6 @@ async function downloadPDF() {
         const lineHeight = 5;
         const blockHeight = Math.max(wrappedUrlLines.length * lineHeight, 7);
 
-        // --- Handle Page Breaks ---
         if (currentY + blockHeight > pageHeight - margin) {
             doc.addPage();
             currentY = 20;
@@ -362,25 +371,6 @@ async function downloadPDF() {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(33, 37, 41);
         doc.text(signatureText, margin + 215, currentY + 5);
-
-        // --- Asset Sub-data Rendering ---
-        const assetData = row.getAttribute('data-assets');
-        if (assetData) {
-            try {
-                const assets = JSON.parse(assetData);
-                doc.setFont("helvetica", "italic");
-                assets.forEach(asset => {
-                    if (currentY + 6 > pageHeight - margin) { doc.addPage(); currentY = 20; drawGridHeader(); doc.setFont("helvetica", "italic"); }
-                    
-                    const color = asset.status === 200 ? [50, 50, 50] : [200, 0, 0];
-                    doc.setTextColor(color[0], color[1], color[2]);
-                    
-                    const label = `   ↳ ${asset.type}: ${asset.url.substring(0, 70)}`;
-                    doc.text(label, margin + 5, currentY + 5);
-                    currentY += 6;
-                });
-            } catch (e) { console.error("Error parsing asset data", e); }
-        }
 
         doc.setDrawColor(241, 243, 245);
         doc.setLineWidth(0.1);
