@@ -42,9 +42,10 @@
                         <input 
                             type="url" 
                             id="sitemapUrl" 
-                            placeholder="https://example.com/sitemap.xml" 
+                            placeholder="https://example.com/sitemap.xml or https://example.com/page" 
                         />
-                        <button id="scanBtn" onclick="startScan()" class="btn-compact">Launch Scan</button>
+                        <button id="scanBtn" onclick="startScan()" class="btn-compact">Scan Sitemap</button>
+                        <button id="singleBtn" onclick="scanSingleUrl()" class="btn-compact btn-secondary">Scan Single URL</button>
                         <button id="clearBtn" onclick="clearResults()" class="btn-compact btn-secondary">Clear</button>
                     </div>
                 </div>
@@ -95,7 +96,7 @@
                                             </svg>
                                         </div>
                                         <h3>Awaiting Target Discovery Stream</h3>
-                                        <p>No real-time URL execution paths have been extracted yet. Provide a valid XML endpoint configuration in the workspace setup to start automated verification protocols</p>
+                                        <p>No real-time URL execution paths have been extracted yet. Provide a valid XML endpoint configuration or a single URL in the workspace setup to start automated verification protocols</p>
                                         <div class="placeholder-tips">
                                             <div class="tip-item"><strong>Status 200</strong> Target reachable and fully optimized.</div>
                                             <div class="tip-item"><strong>Status 3xx / 4xx / 5xx / Error</strong> Redirection loops, dead links, server dropouts, or strict local CORS policy restrictions</div>
