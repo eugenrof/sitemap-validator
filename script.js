@@ -101,6 +101,7 @@ async function startScan() {
 
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
+            console.log("Validated:", url); // Log for verification
             
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
@@ -167,7 +168,7 @@ async function startScan() {
     }
 }
 
-// --- NEW: Single URL Scan Functionality ---
+// --- Updated: Single URL Scan Functionality ---
 async function scanSingleUrl() {
     const url = document.getElementById('sitemapUrl').value.trim();
     const resultsBody = document.getElementById('resultsBody');
@@ -185,6 +186,7 @@ async function scanSingleUrl() {
     statusIndicator.innerHTML = `<span class="spinner"></span> <span>🔍 Checking: ${url}</span>`;
     
     try {
+        console.log("Validated:", url); // Log for verification
         const res = await proxyFetch(url);
         const statusCode = res.status;
         const statusText = res.redirected ? 'OK (Redirected)' : 'OK';
@@ -212,7 +214,7 @@ async function scanSingleUrl() {
         document.getElementById('scanSummary').style.display = 'block';
 
         statusIndicator.innerText = `✅ Check complete.`;
-        if (pdfBtn) pdfBtn.disabled = false;
+        if (pdfBtn) pdfBtn.disabled = false; // Enabled for export
     } catch (err) {
         resultsBody.insertAdjacentHTML('beforeend', `<tr><td>${url}</td><td class="status-error">${err.status || 'ERR'}</td><td>Failed</td></tr>`);
         statusIndicator.innerText = `❌ Error encountered.`;
