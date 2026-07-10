@@ -15,7 +15,6 @@ async function proxyFetch(url) {
         });
         
         if (!response.ok) {
-            // We throw an error that includes the status code so we can capture it in the catch block
             const error = new Error(`HTTP Error: ${response.status}`);
             error.status = response.status;
             throw error;
@@ -101,8 +100,6 @@ async function startScan() {
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
             
-            console.log(`%c Validating: ${url}`, 'color: #0d6efd; font-weight: bold;');
-            
             statusIndicator.innerHTML = `<span class="spinner"></span> <span>⏳ Parsing (${i + 1}/${urls.length}): ${url}</span>`;
             
             let statusCode = 'N/A';
@@ -115,9 +112,7 @@ async function startScan() {
                 statusText = 'OK';
                 rowClass = 'status-200';
             } catch (err) { 
-                // Capture the error status if available, otherwise categorize as a network issue
                 statusCode = err.status || 'ERR';
-                
                 if (statusCode === 404) {
                     statusText = 'Not Found';
                 } else if (statusCode >= 500) {
@@ -177,13 +172,22 @@ function clearResults() {
 }
 
 async function downloadPDF() {
-    const tableRows = document.querySelectorAll('#resultsBody tr:not(.table-empty-row)');
+    const tableRows = Array.from(document.querySelectorAll('#resultsBody tr:not(.table-empty-row)'));
     const totalLinks = tableRows.length;
     
     if (totalLinks === 0) {
         alert('No metrics data available to export. Run a successful scan first.');
         return;
     }
+
+    // Calculate Summary Stats
+    const stats = tableRows.reduce((acc, row) => {
+        const code = parseInt(row.cells[1].innerText);
+        if (code >= 200 && code < 300) acc.ok++;
+        else if (code >= 300 && code < 400) acc.redirects++;
+        else acc.errors++;
+        return acc;
+    }, { ok: 0, redirects: 0, errors: 0 });
 
     const statusIndicator = document.getElementById('statusIndicator');
     const originalStatus = statusIndicator.innerText;
@@ -208,30 +212,29 @@ async function downloadPDF() {
     
     let currentY = 20;
 
+    // Header Box
     doc.setFillColor(233, 236, 239);
-    doc.rect(margin, currentY, pageWidth - (margin * 2), 22, 'F');
+    doc.rect(margin, currentY, pageWidth - (margin * 2), 30, 'F');
     doc.setDrawColor(16, 124, 65);
     doc.setLineWidth(1);
-    doc.line(margin, currentY, margin, currentY + 22);
+    doc.line(margin, currentY, margin, currentY + 30);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(73, 80, 87);
     doc.text("SITEMAP AUTOMATION WORKSPACE REPORT METRICS SUMMARY", margin + 5, currentY + 6);
 
+    // Summary Metrics
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(13);
-    doc.setTextColor(33, 37, 41);
-    doc.text(`Total Evaluated Target Links: `, margin + 5, currentY + 14);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${totalLinks}`, margin + 65, currentY + 14);
+    doc.setFontSize(10);
+    doc.text(`Total: ${totalLinks} | Success: ${stats.ok} | Redirects: ${stats.redirects} | Errors: ${stats.errors}`, margin + 5, currentY + 14);
 
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9);
     doc.setTextColor(108, 117, 125);
-    doc.text(`Timestamp execution: ${new Date().toUTCString()}`, margin + 5, currentY + 19);
+    doc.text(`Timestamp execution: ${new Date().toUTCString()}`, margin + 5, currentY + 24);
 
-    currentY += 32;
+    currentY += 40;
 
     function drawGridHeader() {
         doc.setFillColor(241, 243, 245);
@@ -252,8 +255,6 @@ async function downloadPDF() {
 
     tableRows.forEach((row) => {
         const cells = row.cells;
-        if (cells.length < 3) return;
-
         const urlText = cells[0].innerText.trim();
         const codeText = cells[1].innerText.trim();
         const signatureText = cells[2].innerText.trim();
@@ -278,11 +279,9 @@ async function downloadPDF() {
             doc.text(line, margin + 3, currentY + 5 + (index * lineHeight));
         });
 
-        if (codeText === "200") {
-            doc.setTextColor(43, 138, 62);
-        } else {
-            doc.setTextColor(201, 42, 42);
-        }
+        if (codeText === "200") doc.setTextColor(43, 138, 62);
+        else doc.setTextColor(201, 42, 42);
+
         doc.setFont("helvetica", "bold");
         doc.text(codeText, margin + 180, currentY + 5);
 
