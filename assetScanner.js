@@ -21,19 +21,31 @@ function extractAssetsFromPage(htmlText, baseUrl) {
 }
 
 /**
- * Validates the assets found. 
- * Note: Uses the existing proxyFetch from script.js
+ * Validates the assets found and updates the corresponding UI row
+ * @param {Array} assets - List of assets extracted
+ * @param {HTMLElement} row - The table row element to update
  */
-async function validateAssets(assets) {
+async function validateAndDisplayAssets(assets, row) {
     const results = [];
-    for (const asset of assets) {
+    
+    // We limit validation to the first 20 assets to prevent proxy/timeout issues
+    const subset = assets.slice(0, 20); 
+
+    for (const asset of subset) {
         try {
             // Using HEAD request is faster for asset validation
             const res = await fetch(MY_PROXY_URL + encodeURIComponent(asset.url), { method: 'HEAD' });
             results.push({ ...asset, status: res.status });
         } catch (err) {
-            results.push({ ...asset, status: 'ERR' });
+            results.push({ ...asset, status: 0 }); // 0 indicates network/fetch failure
         }
     }
+
+    // Attach results to the row as a data attribute for the PDF generator
+    row.setAttribute('data-assets', JSON.stringify(results));
+    
+    // Optional: Log to console for debugging
+    console.log(`Validated ${results.length} assets for ${row.cells[0].innerText.trim()}`);
+    
     return results;
 }
