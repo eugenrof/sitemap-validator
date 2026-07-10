@@ -191,7 +191,7 @@ h2 {
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
 }
 
-/* --- Button Systems --- */
+/* --- Updated Button Systems --- */
 .btn-compact {
     padding: 10px 16px;
     font-size: 0.88rem;
@@ -226,6 +226,7 @@ h2 {
     box-shadow: none;
 }
 
+/* Secondary Button (Grey) */
 .btn-secondary {
     background-color: #6c757d;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -235,6 +236,7 @@ h2 {
     background-color: #5a6268;
 }
 
+/* Action Button (Green) */
 .btn-action {
     background-color: #107c41;
     box-shadow: 0 2px 4px rgba(16, 124, 65, 0.1);
@@ -253,24 +255,29 @@ h2 {
     opacity: 0.6;
 }
 
-/* New style for Scan Single Page button */
+/* Scan Single Page Button (Purple - Integrated with btn-compact behavior) */
 .btn-scan-single {
-    background-color: #6f42c1; /* Example: Purple */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    background-color: #6f42c1;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(111, 66, 193, 0.15);
 }
 
 .btn-scan-single:hover {
     background-color: #5935a3;
+    transform: translateY(-0.5px);
+}
+
+.btn-scan-single:active {
+    transform: translateY(0);
 }
 
 .btn-scan-single:disabled {
-    background-color: #a391c4;
+    background-color: #ced4da;
+    color: #6c757d;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
 }
 
 /* --- Soft, Non-Disturbing Placeholder Box --- */
