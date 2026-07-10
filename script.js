@@ -167,6 +167,58 @@ async function startScan() {
     }
 }
 
+// --- NEW: Single URL Scan Functionality ---
+async function scanSingleUrl() {
+    const url = document.getElementById('sitemapUrl').value.trim();
+    const resultsBody = document.getElementById('resultsBody');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const pdfBtn = document.getElementById('pdfBtn');
+
+    if (!url) {
+        alert('Please enter a valid URL.');
+        return;
+    }
+
+    const emptyRow = resultsBody.querySelector('.table-empty-row');
+    if (emptyRow) emptyRow.remove();
+
+    statusIndicator.innerHTML = `<span class="spinner"></span> <span>🔍 Checking: ${url}</span>`;
+    
+    try {
+        const res = await proxyFetch(url);
+        const statusCode = res.status;
+        const statusText = res.redirected ? 'OK (Redirected)' : 'OK';
+        
+        const row = `<tr>
+            <td><a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d6efd; text-decoration: underline;">${url}</a></td>
+            <td class="status-200">${statusCode}</td>
+            <td>${statusText}</td>
+        </tr>`;
+        resultsBody.insertAdjacentHTML('beforeend', row);
+        
+        // Recalculate summary after single addition
+        const tableRows = Array.from(document.querySelectorAll('#resultsBody tr:not(.table-empty-row)'));
+        const stats = tableRows.reduce((acc, row) => {
+            const code = parseInt(row.cells[1].innerText);
+            if (code >= 200 && code < 300) acc.ok++;
+            else if (code >= 300 && code < 400) acc.redirects++;
+            else acc.errors++;
+            return acc;
+        }, { ok: 0, redirects: 0, errors: 0 });
+
+        document.getElementById('sumOk').innerText = `${stats.ok} OK`;
+        document.getElementById('sumRedir').innerText = `${stats.redirects} Redirected`;
+        document.getElementById('sumErr').innerText = `${stats.errors} Errors`;
+        document.getElementById('scanSummary').style.display = 'block';
+
+        statusIndicator.innerText = `✅ Check complete.`;
+        if (pdfBtn) pdfBtn.disabled = false;
+    } catch (err) {
+        resultsBody.insertAdjacentHTML('beforeend', `<tr><td>${url}</td><td class="status-error">${err.status || 'ERR'}</td><td>Failed</td></tr>`);
+        statusIndicator.innerText = `❌ Error encountered.`;
+    }
+}
+
 // --- Management Toolbar Controls ---
 function clearResults() {
     const resultsBody = document.getElementById('resultsBody');
