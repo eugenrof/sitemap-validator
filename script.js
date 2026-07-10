@@ -359,6 +359,7 @@ async function downloadPDF() {
         const lineHeight = 5;
         const blockHeight = Math.max(wrappedUrlLines.length * lineHeight, 7);
 
+        // --- Handle Page Breaks ---
         if (currentY + blockHeight > pageHeight - margin) {
             doc.addPage();
             currentY = 20;
@@ -381,6 +382,25 @@ async function downloadPDF() {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(33, 37, 41);
         doc.text(signatureText, margin + 215, currentY + 5);
+
+        // --- Asset Sub-data Rendering ---
+        const assetData = row.getAttribute('data-assets');
+        if (assetData) {
+            try {
+                const assets = JSON.parse(assetData);
+                doc.setFont("helvetica", "italic");
+                assets.forEach(asset => {
+                    if (currentY + 6 > pageHeight - margin) { doc.addPage(); currentY = 20; drawGridHeader(); doc.setFont("helvetica", "italic"); }
+                    
+                    const color = asset.status === 200 ? [50, 50, 50] : [200, 0, 0];
+                    doc.setTextColor(color[0], color[1], color[2]);
+                    
+                    const label = `   ↳ ${asset.type}: ${asset.url.substring(0, 70)}`;
+                    doc.text(label, margin + 5, currentY + 5);
+                    currentY += 6;
+                });
+            } catch (e) { console.error("Error parsing asset data", e); }
+        }
 
         doc.setDrawColor(241, 243, 245);
         doc.setLineWidth(0.1);
