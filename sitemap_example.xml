@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Valid 200 -->
+  <url><loc>https://www.google.com/</loc></url>
+  <!-- Redirect 301 -->
+  <url><loc>https://httpbin.org/status/301</loc></url>
+  <!-- Redirect 302 -->
+  <url><loc>https://httpbin.org/status/302</loc></url>
+  <!-- Not Found 404 -->
+  <url><loc>https://httpbin.org/status/404</loc></url>
+  <!-- Server Error 500 -->
+  <url><loc>https://httpbin.org/status/500</loc></url>
+</urlset>
